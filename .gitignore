@@ -1,0 +1,8 @@
+db.sqlite3
+.qiniu_pythonsdk_hostscache.json
+__pycache__
+media
+*.pyc
+.DS_Store
+dump.rdb
+sqlite3.db

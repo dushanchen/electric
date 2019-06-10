@@ -1,0 +1,148 @@
+<html>
+<head>
+  <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" href="/static/dist/css/AdminLTE.min.css">
+  <style type="text/css">
+    .content{
+      padding:15px 40px;
+    }
+    .select{
+      width: 157px;
+      margin-left: 10px;
+      border: 1px solid #e9e7e7;
+      font-size: 14px;
+      line-height: 20px;
+    }
+    .result{
+      padding: 30px;
+      font-size: 20px;
+    }
+    #result{
+      font-size: 30px;color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class='content'>
+    <div class=''><h4>用电量预测</h4></div>
+    <div class='box box-warning'>
+      <div class='box-header'>输入参数</div>
+      <div class='box-body'>
+        <div class='row'>
+          <div class='col-md-5'>
+            <form action='' method='POST'>
+                {% csrf_token %}
+                <div class='form-group'>
+                  <p><lable>最高温度：</lable> <input type='number' id='max' name='max' value='{{max}}'/>℃</p>
+                </div>
+                <div class='form-group'>
+                  <p><lable>最低温度：</lable> <input type='number' id='min' name='min' value='{{min}}'/>℃</p>
+                </div>
+                <div class='form-group'>
+                  <div class='row'>
+                    <div class='col-md-6'>
+                      <lable>是否工作:</lable>
+                      <select name='work' value='{{work}}' id='work' class="select">
+                        <option {% if work == '1' %} selected{% endif %} value=1>是</option>
+                        <option {% if work == '0' %} selected{% endif %} value=0>否</option>
+                      </select>
+                    </div>
+                    <div class='col-md-6'>
+                      <button type="button" class="btn btn-block btn-primary" style='width: 60px'>确定</button>
+                    </div>
+                  </div>
+                </div>
+            </form>
+          </div>
+          <div class='col-md-5'>
+            <h4>日用电量预测结果：</h4> <span id='result' ></span>
+          </div>
+      </div>
+    </div>
+
+    
+
+    <div id='mountNode' class='box box-warning'> 
+      <h5 class='box-header'> 七日用电量预测</h5>
+    </div>
+  </div>
+</body>
+
+
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g2-3.5.1/dist/g2.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.data-set-0.10.1/dist/data-set.min.js"></script>
+<script type="text/javascript">
+
+
+  var data = {{chart|safe}}
+// data = [{'day':'20190606', 'count':1322,'max':100},
+//         {'day':'20190607', 'count':3313,'max':100},
+//         {'day':'20190608', 'count':4415,'max':100},
+//         {'day':'20190609', 'count':1233,'max':100},
+//         {'day':'20190610', 'count':1012,'max':100},
+//         {'day':'20190611', 'count':2343,'max':100},
+//       ]
+
+
+  var chart = new G2.Chart({
+    container: 'mountNode',
+    forceFit: true,
+    height: 400,
+    padding:[50,150,40,150],
+  });
+  chart.source(data);
+  chart.scale('count', {
+    min: 0
+  });
+  chart.scale('day', {
+    range: [0, 1]
+  });
+ 
+   chart.axis('count', {
+    label: {
+      formatter: function formatter(val) {
+        return val + '度';
+      }
+    }
+  });
+  chart.line().position('day*count');
+  chart.point().position('day*count').size(4).shape('circle').style({
+    stroke: '#fff',
+    lineWidth: 1
+  }).label('day*count*max*min*work', function(day, count, max, min, work) {
+      return count +'度'+'\n'+min+'-'+max+'℃'+'\n'+work
+    }, {
+      textStyle: {
+        fill: '#7a7a7a',
+        fontSize: 12,
+        stroke: 'white',
+        lineWidth: 2,
+        fontWeight: 300
+      }
+    }).style({
+      lineWidth: 2
+    });;
+  chart.render();
+
+  $(document).ready(function(){
+    $('button').click(function(){
+        $.ajax({
+          url:'',
+          type:'post',
+          dataType:'json',
+          data:{
+            max:$('#max').val(),
+            min:$('#min').val(),
+            work:$('#work').val(),
+          },
+          success:function(data){
+            console.log(data.result)
+            $('#result').html(data.result+'度')
+          }
+      })
+    })
+  })
+</script>
+
+</html>
